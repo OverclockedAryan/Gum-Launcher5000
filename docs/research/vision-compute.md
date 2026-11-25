@@ -2,6 +2,8 @@
 
 Last researched: 2026-11-25 (web research; verify before buying or building)
 
+> **Phase 2 only.** Since [D-011](../decisions.md#d-011-phase-1-joystick-aiming-face-tracking-moves-to-phase-2) (2026-11-25), phase 1 is aimed with a joystick and has no camera or compute board. This note applies when face tracking returns.
+
 Notation: **(calc)** = my own geometry or arithmetic from the sourced specs; **(unverified)** = no source found; **(estimate)** = judgement from indirect data.
 
 ## Key takeaways for the design

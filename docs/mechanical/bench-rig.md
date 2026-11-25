@@ -73,7 +73,7 @@ python tools/launcher_design.py --mass-g 1.42 --length-mm 16.8 --width-mm 10.9 -
 
 | Feature | Value |
 |---|---|
-| Shuttle | A T-section slider: two side walls **8.25 mm** tall form a 17.9 × 11.7 mm pocket (1.1 × the thickest pellet; less than two of the thinnest at 13.0 mm, so only one can ever fit). The pocket is open front and back, so the tongue and pellet pass straight through; a 2 mm ring above bridges the walls and runs in the tunnel's upper level. The tunnel walls hold the pellet in X while it moves |
+| Shuttle | A T-section slider: two side walls **8.25 mm** tall form a 17.9 × 11.7 mm pocket (1.1 × the thickest pellet; less than two of the thinnest at 13.0 mm, so only one can ever fit). The pocket is open front and back, so the tongue and pellet pass straight through; a 2 mm ring above bridges the walls and runs in the tunnel's upper level. The tunnel walls hold the pellet in X while it moves. The window's trailing top edge has a 45° lead-in, so on a load stroke the next pellet in the stack rides up onto the shuttle instead of being hit side-on |
 | Travel | 14.7 mm, from under the stack to the breech; the tunnel's closed end is the load stop |
 | Drive | MG90S under a shelf on the feed housing. A 10.2 mm horn sweeping 92° drives an M2 pin in a slot in the shuttle tab (scotch yoke) |
 | Return | An extension spring pulls the shuttle back under the stack, so the breech is empty with power off (REQ-SAF-015). Test T7 checks whether it really back-drives the unpowered MG90S; if not, switch to a JF-0530B spring-return solenoid with a 1.5:1 lever |

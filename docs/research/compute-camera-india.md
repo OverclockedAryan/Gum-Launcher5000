@@ -2,6 +2,8 @@
 
 Last researched: 2026-11-25 (prices change often; verify before buying)
 
+> **Phase 2 only.** Since [D-011](../decisions.md#d-011-phase-1-joystick-aiming-face-tracking-moves-to-phase-2) (2026-11-25), phase 1 is aimed with a joystick and has no camera or compute board. This note applies when face tracking returns.
+
 Method: prices and stock were read directly from seller pages on 2026-11-25. Web search was unavailable during this pass, so some listings may be missing.
 - Price labels: "incl." means the seller shows the price with GST. "+GST" means the seller lists it without GST; the 18 % GST total is in brackets (calc). "GST n/s" means the page does not say.
 - Marks: (estimate) = judgement from indirect data; (calc) = my own arithmetic; (unverified) = no source found.

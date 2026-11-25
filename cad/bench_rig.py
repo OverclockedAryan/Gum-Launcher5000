@@ -290,6 +290,11 @@ def shuttle(g: Rig) -> Part:
     p += box(-g.sh_wx, g.pk_l + g.sh_wx, g.y_house + 1, g.tab_end, 0, top)           # tab, full section
     p -= box(-g.sh_wx - 1, g.pk_l + g.sh_wx + 1, -g.pk_w / 2, g.pk_w / 2, -1, g.pk_d + 0.01)
     p -= box(0, g.pk_l, -g.pk_w / 2, g.pk_w / 2, g.pk_d - 1, top + 1)                # open roof
+    # 45° lead-in on the window's trailing top edge: on a load stroke the next pellet in the stack
+    # (resting on the pocketed one, as low as the thinnest pellet) rides up onto the shuttle instead
+    # of being hit side-on (D-006)
+    h = top - g.a.thick_min_mm + 0.3
+    p -= Pos(g.pk_l / 2, g.pk_w / 2, top) * Rot(45, 0, 0) * Box(g.pk_l + 2 * g.sh_wx + 2, h * SQ2, h * SQ2)
     # scotch-yoke slot for the horn pin (M2), and the return-spring hole
     dx = g.horn_r * (1 - math.cos(g.sweep / 2)) + 2.4
     p -= box(g.slot_x - dx / 2, g.slot_x + dx / 2, g.pin_y - 1.15, g.pin_y + 1.15, -1, top + 1)
@@ -513,7 +518,7 @@ def report(g: Rig, parts: dict[str, Part], res: list, masses: dict) -> str:
       "**Pellet geometry is a placeholder until then.**")
     p("")
     p("Files: `cad/bench_rig/stl/` (print orientation), `cad/bench_rig/step/` (per part, assembly frame), "
-      "`cad/bench_rig/bench_rig_assembly.step` (cocked, shuttle at the breech), `cad/bench_rig/preview/`.")
+      "`cad/bench_rig/bench_rig_assembly.step` (cocked, shuttle at the breech), `cad/bench_rig/preview/`, and the animated 3D viewer `cad/bench_rig/web/launcher.html` (meshes in `meshes.json`, motion data in `rig.json`).")
     p("")
     p("## Parts")
     p("")
@@ -658,8 +663,51 @@ def render(path: Path, items: list[tuple[Part, str]], elev: float, azim: float, 
     plt.close(fig)
 
 
+# --------------------------------------------------------------------------- web viewer export
+def export_web(g: Rig, parts: dict[str, Part], cam_l: Part, web: Path) -> None:
+    """Meshes in the assembly frame (sled and roller at rest, shuttle at the breech, cam in its own
+    frame) plus rig.json with what the 3D viewer needs to animate the cycle."""
+    import json
+
+    web.mkdir(parents=True, exist_ok=True)
+    hw = hardware(g, cocked=False)
+    meshes = {k: parts[k] for k in ("launcher_body", "lid", "magazine", "chrono_sleeve", "motor_mount",
+                                    "bumper", "preload_bar", "stand", "sled", "shuttle")}
+    meshes["cam"] = cam_l
+    for k in ("rods", "roller_623", "gearbox", "motor_can", "mg90s", "shaft"):
+        meshes[k] = hw[k]
+    import base64
+    import struct
+
+    packed = {}
+    for name, part in meshes.items():                      # indexed triangle meshes, little-endian
+        verts, tris = part.tessellate(0.04, 0.2)
+        pos = struct.pack(f"<{3 * len(verts)}f", *(c for v in verts for c in (v.X, v.Y, v.Z)))
+        idx = struct.pack(f"<{3 * len(tris)}I", *(i for t in tris for i in t))
+        packed[name] = {"p": base64.b64encode(pos).decode("ascii"), "i": base64.b64encode(idx).decode("ascii")}
+    for old in web.glob("*.stl"):
+        old.unlink()
+    (web / "meshes.json").write_text(json.dumps(packed), encoding="utf-8")
+    a = g.a
+    data = {
+        "units": "mm; X along the barrel, Y left, Z up; origin = channel floor at the cocked push face",
+        "stroke": g.stroke, "gap": g.gap, "travel": g.travel, "za": g.za,
+        "cam": {"x": g.cam_x, "y1": g.cam_y1, "rise_deg": a.rise_deg, "dwell_deg": a.dwell_deg,
+                "d": 2 * g.r_cam_max, "t": g.cam_t,
+                "lift": [[round(math.degrees(t), 3), round(u * 1e3, 4)] for t, _, u in g.cam["pts"]]},
+        "pocket": {"l": g.pk_l, "w": g.pk_w, "d": g.pk_d, "ring_h": g.ring_h},
+        "pellet": {"l": a.length_mm, "w": a.width_mm, "t": a.thick_mm, "mass_g": a.mass_g},
+        "magazine": {"x": g.mag_x, "y": g.mag_y, "count": a.rig_pellets},
+        "rod_y": g.rod_y, "seat_bar_x": g.bar_front_nom - g.seat, "seat_sled_rest_x": g.sled_rear_rest + g.seat,
+        "x_end": g.x_end, "sleeve_end": g.x_end + 80.0, "gates": [g.x_end + 10, g.x_end + 10 + a.gate_mm],
+        "v0": a.v0, "sled_g": a.sled_g, "spring_k_n_per_mm": g.sp["k"] / 1e3,
+        "piv": [g.piv_x, g.piv_z],
+    }
+    (web / "rig.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
+
+
 # --------------------------------------------------------------------------- main
-PRINT_ROT = {"lid": (180, 0, 0), "shuttle": (180, 0, 0), "preload_bar": (0, -90, 0), "bumper": (0, -90, 0),
+PRINT_ROT ={"lid": (180, 0, 0), "shuttle": (180, 0, 0), "preload_bar": (0, -90, 0), "bumper": (0, -90, 0),
              "chrono_sleeve": (0, 0, 0)}
 
 
@@ -681,6 +729,7 @@ def parse(argv: list[str] | None) -> tuple[argparse.Namespace, list[str]]:
     q.add_argument("--doc", type=Path, default=ROOT / "docs" / "mechanical" / "bench-rig-cad.md")
     q.add_argument("--no-preview", action="store_true")
     q.add_argument("--no-checks", action="store_true")
+    q.add_argument("--no-web", action="store_true", help="skip the meshes for the 3D viewer")
     return q.parse_known_args(argv)
 
 
@@ -726,6 +775,10 @@ def main(argv: list[str] | None = None) -> int:
         children.append(part)
     export_step(Compound(children=children, label="desuu_bench_rig"), str(out / "bench_rig_assembly.step"))
     print(f"wrote {len(parts)} STL + STEP to {out}", flush=True)
+
+    if not own.no_web:
+        export_web(g, parts, cam_l, out / "web")
+        print(f"wrote 3D viewer meshes to {out / 'web'}", flush=True)
 
     res: list = []
     if not own.no_checks:

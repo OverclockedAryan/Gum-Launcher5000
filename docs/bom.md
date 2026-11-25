@@ -1,37 +1,44 @@
 # DESUU: Bill of materials v1
 
-Deliverable 2. Version 1, 2026-11-25, consolidated from [research/bom-pricing-india.md](research/bom-pricing-india.md) and [research/compute-camera-india.md](research/compute-camera-india.md). Every link and stock note is in those two files.
+Deliverable 2. Version 1.1, 2026-11-25 (split into phases for D-011), consolidated from [research/bom-pricing-india.md](research/bom-pricing-india.md) and [research/compute-camera-india.md](research/compute-camera-india.md). Every link and stock note is in those two files.
 
 - **Prices:** ₹ including GST, as read from seller pages on 2026-11-25. Prices move fast (the Pi rose five times in 2026), so re-check before each order.
-- **Design basis:** decisions D-001…D-010: a stepper turret, a snail-cam push sled, a Pi 5 1 GB with an OV5647 camera, and GC9A01 eyes.
+- **Design basis:** decisions D-001…D-011: a stepper turret, a snail-cam push sled and GC9A01 eyes. **Phase 1 aims with a wired joystick (D-011)**, so the Pi 5 1 GB, the OV5647 camera and the I2S audio are bought only for phase 2.
 - **Microcontroller:** your own Pico or ESP32, so it costs nothing here.
 
 ## Totals
 
-| Group | ₹ |
+| Group | Phase 1 (joystick) ₹ | Added in phase 2 (face tracking) ₹ |
+|---|---|---|
+| A. Turret (steppers, drivers, belts, homing) | 2,914 | |
+| B. Launcher and feed | 1,799 | |
+| C. Pan bearing | 499 | |
+| D. Safety switches | 497 | |
+| E. Power | 634 | |
+| F. Character: eyes (phase 1), I2S amp and speaker (phase 2) | 988 | 408 |
+| G. Hardware and wiring | 1,472 | |
+| H. Compute and camera | | 6,942 |
+| I. Unpriced small parts (estimate) | 400 | |
+| L. Controller, OLED, buzzer (estimate) | 450 | |
+| **Robot parts** | **9,653** | **7,350** |
+| J. Filament, 2 kg (skip if you already own PETG/PLA) | 1,661 | |
+| Shipping, about 5 orders (estimate) | 400 | |
+| **Spend** | **₹11,714** | **₹7,350** |
+
+| Against the ₹21,000 cap | ₹ |
 |---|---|
-| A. Turret (steppers, drivers, belts, homing) | 2,914 |
-| B. Launcher and feed | 1,799 |
-| C. Pan bearing | 499 |
-| D. Safety switches | 497 |
-| E. Power | 634 |
-| F. Character (eyes, sound) | 1,396 |
-| G. Hardware and wiring | 1,472 |
-| H. Compute and camera | 6,942 |
-| I. Unpriced small parts (estimate) | 400 |
-| **Robot parts (A–I)** | **16,553** |
-| J. Filament, 2 kg (skip if you already own PETG/PLA) | 1,661 |
-| Shipping, about 5 orders (estimate) | 400 |
-| **Total against the ₹21,000 cap** | **₹18,614** (≈ 89 %) |
-| **Margin** | **₹2,386** |
+| **Whole robot (phase 1 + phase 2)** | **19,064** (≈ 91 %) |
+| **Margin** | **1,936** |
 | K. Tools (outside the cap) | about 1,000 |
+
+Phase 1 alone spends ₹11,714. The ₹7,350 for vision waits until phase 2, which also gives the Pi 5 1 GB time to come back in stock in India.
 
 The margin covers the two most likely extra costs:
 
-1. The official 27 W PSU (₹1,063), if the 5 V buck causes under-voltage warnings on the Pi.
+1. The official 27 W PSU (₹1,063), if the 5 V buck causes under-voltage warnings on the Pi (phase 2).
 2. A spare worm motor (₹599).
 
-The Camera Module 3 step-up (+₹2,800) would use up the whole margin, so it only happens if the M4 benchmark demands it.
+The Camera Module 3 step-up (+₹2,800) would use up the whole margin, so it only happens if the phase 2 benchmark demands it.
 
 ## A. Turret (D-008)
 
@@ -96,11 +103,11 @@ Avoid two parts here:
 | Item | Part | Seller | ₹ each | Qty | ₹ |
 |---|---|---|---|---|---|
 | Eyes | GC9A01 1.28" round 240 × 240 SPI | Robu | 494 | 2 | 988 |
-| Amplifier | MAX98357A I2S (on the Pi) | Robu | 179 | 1 | 179 |
-| Speaker | 40 mm 4 Ω 3 W | Amazon.in | 229 | 1 | 229 |
+| Amplifier | MAX98357A I2S (on the Pi): **phase 2** | Robu | 179 | 1 | 179 |
+| Speaker | 40 mm 4 Ω 3 W: **phase 2** | Amazon.in | 229 | 1 | 229 |
 | | | | | | **1,396** |
 
-Budget fallback: two WS2812 7-LED jewels (₹134) instead of the GC9A01s save ₹854.
+Budget fallback: two WS2812 7-LED jewels (₹134) instead of the GC9A01s save ₹854, and free four microcontroller pins. In phase 1 the chirp comes from the buzzer in group L.
 
 ## G. Hardware and wiring
 
@@ -119,7 +126,9 @@ Budget fallback: two WS2812 7-LED jewels (₹134) instead of the GC9A01s save �
 
 There's no JST-XH kit: you don't have a crimper. Solder the joints with heat-shrink, and use Dupont leads for anything that has to unplug.
 
-## H. Compute and camera (D-007)
+## H. Compute and camera (D-007): phase 2 only
+
+Not needed for the joystick phase (D-011). Kept here, priced, so the cap still covers the whole robot.
 
 | Item | Part | Seller | ₹ each | Qty | ₹ |
 |---|---|---|---|---|---|
@@ -130,7 +139,7 @@ There's no JST-XH kit: you don't have a crimper. Solder the joints with heat-shr
 | Camera cable | Official Pi 5 22→15-pin, 500 mm (for the turret service loop) | Robu | 409 | 1 | 409 |
 | | | | | | **6,942** |
 
-The Pi takes power from the XY-3606 rail, so there's no official PSU on this list (D-007). Check `vcgencmd get_throttled` during the M4 benchmark.
+The Pi takes power from the XY-3606 rail, so there's no official PSU on this list (D-007). Check `vcgencmd get_throttled` during the phase 2 benchmark.
 
 ## I. Small parts not yet priced (estimate ₹400)
 
@@ -145,6 +154,22 @@ The Pi takes power from the XY-3606 rail, so there's no official PSU on this lis
 | M5 × 60 and M5 × 25 bolts, nut, wing nut, washers | Bench-rig stand pivot and elevation lock | About ₹40 |
 | Extension spring, about 10 mm body | Shuttle return on the bench rig | From the spring assortment |
 | Zip ties, 3.6 mm | Hold the JGY370 in its printed cradle | |
+
+## L. Controller and status (D-011): phase 1
+
+Prices are estimates from typical listings, not yet checked at the seller: re-check before ordering.
+
+| Item | Part | Seller | ₹ each | Qty | ₹ |
+|---|---|---|---|---|---|
+| Joystick | KY-023 dual-axis thumb joystick module | Robu | 55 | 1 | 55 |
+| ENABLE, FIRE | 16 mm momentary push buttons | Robu | 30 | 2 | 60 |
+| RANGE − / + | 12 mm tactile switches with caps | Robu | 10 | 2 | 20 |
+| Cable | 2 m Cat-6 patch cable: cut one end, solder the 8 cores (no crimper needed) | Amazon.in | 130 | 1 | 130 |
+| Status display | 0.96" SSD1306 I2C OLED, on the base | Robu | 170 | 1 | 170 |
+| Buzzer | Passive piezo, for the pre-shot chirp (REQ-SAF-012) | Robu | 15 | 1 | 15 |
+| | | | | | **450** |
+
+The handheld shell is printed. Keep the cable's other end as a plug: the RJ45 socket on the base comes from a ₹30 breakout or is skipped by soldering straight in.
 
 ## J. Filament
 
@@ -169,10 +194,10 @@ Buy in milestone order, so money is spent only once the part before it works.
 
 | Order | When | What | Approx ₹ |
 |---|---|---|---|
-| 1 | Now (M2 bench rig + measuring; design in [mechanical/bench-rig.md](mechanical/bench-rig.md)) | **Tools:** caliper, scale, glasses. **Launcher and feed:** everything in group B, the I parts. **Safety:** group D. **Power:** group E, including the XY-3606 (it powers the shuttle servo on the bench rig). **Wiring:** group G. **Filament:** PETG | ≈ 5,700 + tools |
-| 2 | M3 (vision on the PC) | Nothing: use your laptop's built-in webcam | 0 |
-| 3 | M4 (turret) | Groups A and C; group H (the Pi, if it's back in stock) | ≈ 10,350 |
-| 4 | M7 (character) | Group F; PLA+ | ≈ 2,200 |
+| 1 | Now (M2 bench rig and M3 controller; design in [mechanical/bench-rig.md](mechanical/bench-rig.md)) | **Tools:** caliper, scale, glasses. **Launcher and feed:** everything in group B, the I parts. **Safety:** group D. **Power:** group E, including the XY-3606 (it powers the shuttle servo on the bench rig). **Wiring:** group G. **Controller:** group L. **Filament:** PETG | ≈ 6,100 + tools |
+| 2 | M4 (turret) | Groups A and C | ≈ 3,400 |
+| 3 | M7 (character) | Group F eyes; PLA+ | ≈ 1,800 |
+| 4 | Phase 2 (face tracking) | Group H (the Pi 5 1 GB once it's back in stock) and the group F amp and speaker | ≈ 7,350 |
 
 **Seller grouping:** one ElectronicsComp cart and one Robu cart per phase, plus the Amazon-only items: the 6806 bearings, the 0.6 mm spring, the IR pairs, the speaker, the M2.5 screws, the filament and the caliper. ElectronicsComp showed a 10 % prepaid coupon (unverified at checkout).
 

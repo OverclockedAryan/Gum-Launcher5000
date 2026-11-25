@@ -5,15 +5,16 @@ Each entry records context, the decision, the alternatives and what it costs us.
 | ID | Decision | Status |
 |---|---|---|
 | D-001 | Launcher: snail-cam spring "push sled" with a sled about 3× the pellet's mass; fixed speed, elevation-only aiming | Proposed |
-| D-002 | "Never aim at eyes" is enforced on the predicted impact zone, not on the barrel direction | Proposed |
-| D-003 | Camera rides on the turret head, tilted about 10° down from the barrel | Proposed |
+| D-002 | "Never aim at eyes" is enforced on the predicted impact zone, not on the barrel direction | Proposed, phase 2 (D-011) |
+| D-003 | Camera rides on the turret head, tilted about 10° down from the barrel | Proposed, phase 2 (D-011) |
 | D-004 | Two processors plus a hardware interlock chain | Proposed |
-| D-005 | Distance from face landmarks with per-person calibration, biased short | Proposed |
+| D-005 | Distance from face landmarks with per-person calibration, biased short | Proposed, phase 2 (D-011) |
 | D-006 | Feed: orientation-locking gravity stack with a spring-return shuttle | Proposed |
-| D-007 | Compute: Raspberry Pi 5 1 GB with an OV5647 camera, bought last (out of stock in India) | Proposed |
+| D-007 | Compute: Raspberry Pi 5 1 GB with an OV5647 camera, bought last (out of stock in India) | Proposed, phase 2 (D-011) |
 | D-008 | Turret actuators: NEMA17 steppers on TMC2209 drivers through 3:1 GT2 belts | Proposed |
-| D-009 | Consent: an explicit opt-in per shot | Proposed |
+| D-009 | Consent: an explicit opt-in per shot | Proposed; phase 1 form in D-011 |
 | D-010 | Design pellet: hard-coated, non-liquid, 1.3–1.5 g | Proposed |
+| D-011 | Phase 1 aims with a wired joystick; face tracking, the camera and the Pi move to phase 2 | **Accepted** (owner, 2026-11-25) |
 
 ---
 
@@ -255,3 +256,40 @@ No brand publishes dimensions.
 **Decision.** Design around one hard-coated, non-liquid pellet of 1.3–1.5 g. The owner buys two or three candidates sold locally and measures 30 of each (mass to 0.01 g, L × W × T), and the brand with the smallest spread wins. Liquid-filled pellets and anything ≥ 2 g are out.
 
 **Consequences.** The magazine, shuttle and channel dimensions, the spring preload and the cap verification are all tied to that brand. Changing brand means re-measuring and re-running the cap check.
+
+## D-011 Phase 1: joystick aiming; face tracking moves to phase 2
+
+**Context.** On 2026-11-25 the owner decided that the first half of the project uses a joystick, not face tracking. That removes the camera, the Raspberry Pi and everything that depended on live face landmarks from phase 1: auto-aim (D-003), the range estimate (D-005), the eye-zone gate (D-002), the gesture opt-in (D-009) and the compute board (D-007). The mechanics are untouched: launcher (D-001), feed (D-006), turret (D-008) and pellet (D-010) carry straight over, and phase 2 adds vision back on top of them.
+
+**Decision.**
+
+- **Controller.** A wired handheld box on a 2 m Cat-6 patch cable (8 cores, soldered: no crimper needed), plugged into the microcontroller:
+  - a 2-axis analog thumb joystick (KY-023 type) for **rate control**: deflection sets turret speed, with a deadband and an expo curve, so small deflections give fine aim (about 2°/s) and full deflection about 60°/s pan, 30°/s tilt;
+  - **ENABLE**, a hold-to-fire deadman button; **FIRE**; and **RANGE −/+**.
+  - Wired, not Bluetooth: it works on either the Pico or the ESP32, has no pairing or link-loss states, and unplugging it pulls ENABLE low, which is SAFE. A Bluetooth gamepad (Bluepad32 on an ESP32) stays an option once fire control is proven.
+- **Aiming.** The operator sits behind the robot and aims by eye over a printed sight on the turret head (rear notch, front post, adjustable), zeroed at 1.0 m during calibration. There's no laser (REQ-SAF-008).
+- **Range.** The operator sets the slant range with RANGE −/+ in 0.1 m steps from 0.5 to 2.0 m, shown on a 0.96" OLED on the base. The person sits or stands at a marked distance (tape marks every 0.25 m). At 1 m the offset changes about 1° per 0.1 m, so the marks matter more than the dial.
+- **Holdover on fire.** The microcontroller holds the [ballistic seed table](research/ballistics.md) (range × line-of-sight elevation). The operator holds the sight on the lower lip. On FIRE the turret tilts up by the table offset for the set range and its current elevation, settles, chirps, releases, then returns. The table is biased short, so errors land low.
+- **Fire control lives in the microcontroller** in phase 1: one state machine, one firing path (REQ-SAF-017). It's written as plain Python with the hardware behind interfaces, so the same module runs under pytest on the PC with fakes and under MicroPython on the board.
+- **Eyes.** Nothing can check eye position without vision, so in phase 1 **everyone in front of the armed robot wears impact-rated glasses, with no exception** (REQ-SAF-018). The physical energy cap, the chronograph lockout, the aim-low rule and the hardware ARM chain are unchanged.
+- **Consent and pacing.** The target says they're ready; the operator holds ENABLE and presses FIRE. The microcontroller enforces ≥ 10 s between shots, at most 5 shots per arming (cycle the ARM switch for more), a 300 ms warning chirp, and a still turret before release.
+- **Feedback.** A passive buzzer on the microcontroller gives the chirp and fault tones (the I2S speaker needs the Pi, so it moves to phase 2). The OLED shows SAFE/ARMED, range, shots left and the last chronograph speed. Shot lines also go out over USB, so a laptop can log them.
+
+**Phase 2** brings back the Pi 5, the OV5647 on the head, MediaPipe auto-aim, the eye-zone gate, gesture consent and the auto modes, as D-002…D-009 describe. The joystick stays as the manual trick-shot controller (REQ-MODE-003), and in phase 2 its FIRE goes through the full vision gates whenever a face is in the firing cone.
+
+**Alternatives.**
+
+| Option | Why not, for phase 1 |
+|---|---|
+| Keep the camera as a video view only | Needs the Pi anyway, which is out of stock in India; adds cost before it's needed |
+| USB gamepad on a laptop, serial to the microcontroller | The firing path would depend on a laptop and a link; the wired box keeps it inside the microcontroller |
+| Range presets only (0.5 / 1.0 / 1.5 / 2.0 m) | Too coarse: a 0.25 m error is about 2.5° of offset at 1 m |
+| A Class 1 ToF range sensor | Its cone is too wide to isolate a face (D-005); kept as a phase-2 experiment |
+
+**Consequences.**
+
+- **Cost.** Phase 1 buys no compute board, camera or I2S audio: about ₹7,350 less up front. The controller, OLED and buzzer add about ₹450 (estimate). See [bom.md](bom.md).
+- **Accuracy.** It now depends on the operator, the sight and how well the person stays on their mark. REQ-PERF-002 is verified in phase 1 on a fixed target at a known range. The error budget's range term comes from the marks (about ±3 cm) instead of the face estimate.
+- **Safety case.** It moves from automatic gating to interlocks plus procedure: glasses, marks, pacing, deadman. The phase-1 gate list is REQ-SAF-017; the hazard table in [safety.md](safety.md) covers the change.
+- **Pins.** Phase 1 puts more on the microcontroller (joystick ADC × 2, four buttons, OLED I2C, buzzer). The Pico's 26 GPIOs are nearly all used once the GC9A01 eyes are added; the wiring deliverable (4) settles the pin map, and WS2812 eyes are the fallback.
+- **Roadmap.** Vision moves after the robot works end to end with the joystick ([roadmap.md](roadmap.md)).

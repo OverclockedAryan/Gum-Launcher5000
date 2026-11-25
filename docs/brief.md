@@ -49,6 +49,10 @@ The owner's brief, kept verbatim, plus their answers to the setup questions. [re
 | Experience | Python/OpenCV, electronics wiring, CAD, microcontrollers | Full-stack builder: explain the decisions and skip the basics. |
 | Owned parts | A Raspberry Pi Pico or an ESP32 board (which one is still to confirm) | Reuse it as the real-time and safety co-processor. |
 
+## Owner's later decisions
+
+- **2026-11-25, phase 1 uses a joystick.** "We are not using face tracking in the first half, we will use a joystick." Recorded as [D-011](decisions.md#d-011-phase-1-joystick-aiming-face-tracking-moves-to-phase-2): phase 1 is aimed by an operator with a wired joystick and has no camera or Raspberry Pi; face tracking, auto-aim and the vision safety gates move to phase 2. The brief's trigger rule (mouth open and stable for 300 ms) and its eye rule are met automatically only in phase 2; in phase 1 they become the operator's job, backed by mandatory impact-rated glasses (REQ-SAF-018).
+
 ## Interpretations to confirm
 
 These turn ambiguous phrases into testable numbers. They are working assumptions until the owner changes them.
