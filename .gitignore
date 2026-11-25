@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Models and runtime data (downloaded or produced on the robot)
+models/*.task
+models/*.tflite
+logs/
+shots/
+*.log
+
+# Machine-specific overrides (calibration that belongs to the robot stays tracked)
+config/*.local.yaml
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Slicer output (keep the .3mf projects, drop the machine code)
+*.gcode
+*.bgcode
