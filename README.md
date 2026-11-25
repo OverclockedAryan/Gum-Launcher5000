@@ -1,4 +1,4 @@
-# DESUU
+# Gum Laumcher
 
 A friendly desk robot that tracks your face and, when you ask for one, tosses a piece of pellet gum into your mouth.
 
