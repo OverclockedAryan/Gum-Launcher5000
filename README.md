@@ -1,4 +1,4 @@
-# Gum Laumcher
+# Gum Launcher
 
 A friendly desk robot that tosses a piece of pellet gum into your mouth. Phase 1 is aimed with a joystick; phase 2 adds face tracking.
 
